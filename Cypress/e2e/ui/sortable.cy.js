@@ -1,9 +1,8 @@
-import sortablePage from '../../support/pages/sortablePage';
+import sortablePage from '../../support/pages/sortable.page';
 
 describe('Sortable', () => {
-  it('deve reordenar os itens para ordem crescente', () => {
+  it('valida a ordem padrão exibida na lista', () => {
     sortablePage.visit();
-    sortablePage.sortListInAscendingOrder();
-    cy.log('✅ Teste Sortable finalizado com sucesso!');
+    sortablePage.validateDefaultListOrder();
   });
 });

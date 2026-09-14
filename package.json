@@ -1,8 +1,14 @@
 {
-  "name": "desafio-accenture",
+  "name": "cypress-automation-lab",
   "version": "1.0.0",
+  "private": true,
+  "description": "Laboratório de automação UI e API com Cypress usando DemoQA.",
   "scripts": {
-    "test": "cypress run"
+    "test": "cypress run",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:api": "cypress run --spec \"cypress/e2e/api/**/*.cy.js\"",
+    "cy:run:ui": "cypress run --spec \"cypress/e2e/ui/**/*.cy.js\""
   },
   "devDependencies": {
     "@faker-js/faker": "^8.0.2",

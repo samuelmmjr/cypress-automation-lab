@@ -1,144 +1,154 @@
-# Desafio Accenture - Testes Automatizados com Cypress
+# Cypress Automation Lab
 
-Este projeto contém a automação de testes **E2E (end-to-end)** da plataforma [DemoQA](https://demoqa.com/) utilizando **Cypress**.
+Laboratório prático de automação de testes **UI e API com Cypress**, estruturado a partir de cenários públicos da plataforma [DemoQA](https://demoqa.com/).
 
----
+O foco deste repositório não é apenas demonstrar comandos do Cypress. A proposta é aplicar princípios de **Quality Engineering**: cenários independentes, assertions relevantes, organização por responsabilidade, redução de flakiness e código de teste legível e sustentável.
 
-## 📁 Estrutura do Projeto
+> Este projeto surgiu originalmente de um desafio técnico e foi posteriormente reorganizado como laboratório de automação.
 
-- `cypress/e2e/api/` – Testes relacionados à API de criação e reserva de livros.
-- `cypress/e2e/ui/` – Testes da interface de usuário:
-  - Formulários
-  - Progress Bar
-  - Browser Windows
-  - Web Tables
-  - Sortable
+## Objetivos
 
-- `cypress/support/pages/` – Padrão Page Object para encapsular a lógica de interação com cada página.
-- `cypress/fixtures/` – Contém o arquivo `.txt` usado para upload no formulário.
+- Exercitar automação E2E de interface web.
+- Validar fluxos de API REST com criação e limpeza de dados.
+- Separar specs de UI e API.
+- Aplicar Page Objects onde há ganho real de manutenção.
+- Evitar waits fixos e dependência de ordem entre testes.
+- Demonstrar assertions sobre comportamento e dados, não apenas status HTTP.
 
----
+## Cobertura atual
 
-## ▶️ Como executar os testes
+### API — Book Store
 
-### 1. Clonar o repositório
+O cenário automatizado executa um fluxo completo e autocontido:
 
-```bash
-git clone https://github.com/seu-usuario/desafio-accenture.git
-cd desafio-accenture
+1. cria um usuário temporário;
+2. gera o token de autenticação;
+3. consulta livros disponíveis;
+4. adiciona dois livros ao usuário;
+5. consulta o perfil e valida os ISBNs associados;
+6. remove o usuário criado ao final do fluxo.
+
+### UI
+
+| Área | Validação |
+| --- | --- |
+| Practice Form | preenchimento com dados dinâmicos e validação dos dados no modal de confirmação |
+| Progress Bar | interrupção antes de 25%, conclusão em 100% e reset sem wait fixo |
+| Browser Windows | interceptação da chamada de nova janela e validação da página de destino |
+| Web Tables | criação, edição e exclusão de registro localizado pelo e-mail |
+| Sortable | validação da ordem padrão da lista |
+
+> O cenário de Sortable valida a ordem exibida. Ele não é apresentado como teste de drag-and-drop porque a implementação atual não realiza reordenação de itens.
+
+## Estrutura
+
+```text
+cypress-automation-lab/
+├── cypress/
+│   ├── e2e/
+│   │   ├── api/
+│   │   │   └── book-store.cy.js
+│   │   └── ui/
+│   │       ├── browser-windows.cy.js
+│   │       ├── practice-form.cy.js
+│   │       ├── progress-bar.cy.js
+│   │       ├── sortable.cy.js
+│   │       └── web-tables.cy.js
+│   ├── fixtures/
+│   │   └── exemplo.txt
+│   └── support/
+│       ├── commands.js
+│       ├── e2e.js
+│       └── pages/
+│           ├── browser-windows.page.js
+│           ├── practice-form.page.js
+│           ├── progress-bar.page.js
+│           ├── sortable.page.js
+│           └── web-tables.page.js
+├── .gitignore
+├── cypress.config.js
+├── package.json
+└── README.md
 ```
 
-### 2. Instalar as dependências
+## Decisões de engenharia
+
+### Cenário de API autocontido
+
+O fluxo de Book Store é tratado como um único cenário de negócio. Isso elimina a dependência entre vários `it()` que compartilhavam `userId`, `token` e ISBNs. O teste cria seu próprio estado, valida o resultado e remove o usuário criado.
+
+### Assertions mais relevantes
+
+Além dos códigos HTTP, o projeto valida conteúdo de respostas, username, token, quantidade de livros e ISBNs associados ao usuário.
+
+Nos testes de UI, operações de CRUD são confirmadas na tabela e o formulário verifica os dados exibidos após o envio.
+
+### Sem `cy.wait()` fixo no Progress Bar
+
+A automação observa o valor semântico exposto em `aria-valuenow` e usa o mecanismo de retry do Cypress. Isso reduz dependência de velocidade de máquina ou ambiente.
+
+### Seleção por identidade do dado
+
+No Web Tables, edição e exclusão localizam o registro pelo e-mail criado pelo teste. Isso evita depender de posições como `.last()`, que podem mudar conforme o estado da aplicação.
+
+### Page Objects com responsabilidade limitada
+
+Os Page Objects encapsulam navegação e interação com componentes específicos. Dados e intenção do cenário permanecem visíveis nas specs para não esconder excessivamente a regra de teste.
+
+## Pré-requisitos
+
+- Node.js 18 ou superior
+- npm
+
+## Instalação
 
 ```bash
+git clone https://github.com/samuelmmjr/cypress-automation-lab.git
+cd cypress-automation-lab
 npm install
 ```
 
-### 3. Executar o Cypress em modo interativo (GUI)
+## Execução
+
+Abrir o Cypress em modo interativo:
 
 ```bash
-npx cypress open
+npm run cy:open
 ```
 
-Ou, para rodar em modo headless (terminal):
+Executar toda a suíte em modo headless:
 
 ```bash
-npx cypress run
+npm test
 ```
 
----
-
-## 🧪 Executar um teste específico
+Somente API:
 
 ```bash
-npx cypress run --spec "cypress/e2e/ui/formulario.cy.js"
+npm run cy:run:api
 ```
 
----
+Somente UI:
 
-## ✅ Testes implementados
-
-### API
-- Criar usuário
-- Gerar token
-- Autorizar usuário
-- Listar livros
-- Reservar livros
-- Consultar perfil com livros reservados
-
-### UI
-- 📋 Formulário (Forms > Practice Form)
-- ⏳ Progress Bar (Widgets > Progress Bar)
-- 🪟 Browser Windows (Alerts, Frame & Windows)
-- 📊 Web Tables (Elements > Web Tables)
-- 🔃 Sortable (Interactions > Sortable)
-
----
-
-## ✨ Extras
-
-- Projeto estruturado com Page Objects
-- `cy.log(...)` ao final de cada teste para melhor rastreabilidade
-- Upload de arquivo `.txt` incluído via `cypress/fixtures/exemplo.txt`
-
----
-
-## 📌 Requisitos
-
-- Node.js 18+
-- npm
-- Cypress ^13.1.0
-
----
-
-## 🚀 Observação
-
-O projeto foi desenvolvido sem o uso do Cucumber inicialmente, para facilitar a estrutura e execução. A integração BDD com Gherkin pode ser adicionada como melhoria.
-
----
-
-## 🧑‍💻 Autor
-
-Desenvolvido por **Samuel** como parte do desafio técnico da Accenture.
-
-
----
-
-## ✅ Pré-requisitos
-
-Certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
-
-- [Node.js](https://nodejs.org/) (versão 16 ou superior)
-- [Git](https://git-scm.com/)
-
----
-
-## 🧪 Descrição dos Testes Automatizados
-
-### API
-- **reserva-livros.cy.js**: Cria usuário, autentica, lista livros disponíveis, reserva dois e verifica os dados do usuário.
-
-### UI
-- **formulario.cy.js**: Preenche formulário com dados aleatórios e realiza upload de um `.txt`.
-- **progressBar.cy.js**: Inicia e valida progresso menor que 25%, depois reinicia e confirma reset.
-- **browserWindows.cy.js**: Abre nova janela e valida mensagem “This is a sample page”.
-- **webTables.cy.js**: Cria, edita e remove registros da tabela.
-- **sortable.cy.js**: Reordena itens da lista de forma crescente com drag-and-drop.
-
----
-
-## 🖥️ Exemplo de Saída Esperada
-
-Ao rodar os testes, você deve ver saídas como:
-
-```
-✅ Teste de formulário finalizado!
-✅ Teste de progress bar finalizado!
+```bash
+npm run cy:run:ui
 ```
 
----
+## Stack
 
-## 🤝 Contribuição
+`Cypress` · `JavaScript` · `Node.js` · `Faker` · `REST API`
 
-Este projeto é parte de um desafio técnico e pode ser expandido com testes adicionais. Sugestões são bem-vindas!
+## Próximas evoluções
 
+- adicionar CI com GitHub Actions;
+- produzir relatório de execução na pipeline;
+- adicionar cenários negativos de API;
+- evoluir o cenário Sortable para uma interação real de drag-and-drop se isso trouxer valor ao laboratório;
+- avaliar uma camada de API reutilizável quando a quantidade de cenários justificar a abstração.
+
+## Autor
+
+**Samuel Melo — Quality Engineer**
+
+- GitHub: https://github.com/samuelmmjr
+- LinkedIn: https://www.linkedin.com/in/samuelmelojr/
