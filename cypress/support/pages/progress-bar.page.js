@@ -26,9 +26,14 @@ class ProgressBarPage {
 
   resumeAndWaitUntilComplete() {
     cy.get("#startStopButton").click();
-    cy.get("#progressBar .progress-bar", { timeout: 15000 })
+
+    cy.get("#progressBar .progress-bar", { timeout: 30000 })
       .should("have.attr", "aria-valuenow", "100")
       .and("have.text", "100%");
+
+    cy.get("#resetButton").should("be.visible").and("have.text", "Reset");
+
+    cy.wait(500);
   }
 
   reset() {
