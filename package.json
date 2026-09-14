@@ -8,10 +8,17 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:api": "cypress run --spec \"cypress/e2e/api/**/*.cy.js\"",
-    "cy:run:ui": "cypress run --spec \"cypress/e2e/ui/**/*.cy.js\""
+    "cy:run:ui": "cypress run --spec \"cypress/e2e/ui/**/*.cy.js\"",
+    "report:clean": "node -e \"require('fs').rmSync('reports', { recursive: true, force: true })\"",
+    "report:merge": "mochawesome-merge \"reports/mochawesome/*.json\" -o reports/mochawesome/report.json",
+    "report:generate": "marge reports/mochawesome/report.json -f index -o reports/mochawesome/html",
+    "test:report": "npm run report:clean && cypress run && npm run report:merge && npm run report:generate"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.0.2",
-    "cypress": "^13.1.0"
+    "cypress": "^13.1.0",
+    "mochawesome": "^8.1.0",
+    "mochawesome-merge": "^5.1.1",
+    "mochawesome-report-generator": "^6.3.2"
   }
 }
