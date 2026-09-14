@@ -32,12 +32,28 @@ class ProgressBarPage {
   }
 
   reset() {
-    cy.get("#resetButton")
-      .should("be.visible")
-      .and("have.text", "Reset")
-      .click();
+    const clickReset = (attempt = 1) => {
+      cy.get("#resetButton")
+        .should("be.visible")
+        .and("have.text", "Reset")
+        .click({ force: true });
+
+      cy.get("body").then(($body) => {
+        const resetStillExists = $body.find("#resetButton").length > 0;
+
+        if (resetStillExists && attempt < 2) {
+          clickReset(attempt + 1);
+        }
+      });
+    };
+
+    clickReset();
+
+    cy.get("#startStopButton").should("be.visible").and("have.text", "Start");
+
     cy.get("#progressBar .progress-bar")
       .should("have.attr", "aria-valuenow", "0")
+      .and("have.attr", "style", "width: 0%;")
       .and("have.text", "0%");
   }
 }
