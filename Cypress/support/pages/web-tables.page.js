@@ -1,39 +1,69 @@
 class WebTablesPage {
   visit() {
-    cy.visit('/webtables');
+    cy.visit("/webtables");
+
+    cy.get("#addNewRecordButton").should("be.visible");
+
     cy.removeDemoQaAds();
   }
 
-  addRecord(record) {
-    cy.get('#addNewRecordButton').click();
-    cy.get('#firstName').type(record.firstName);
-    cy.get('#lastName').type(record.lastName);
-    cy.get('#userEmail').type(record.email);
-    cy.get('#age').type(String(record.age));
-    cy.get('#salary').type(String(record.salary));
-    cy.get('#department').type(record.department);
-    cy.get('#submit').click();
+  getRowByEmail(email) {
+    return cy.contains("table tbody tr", email);
+  }
 
-    cy.contains('.rt-tr-group', record.email).should('contain.text', record.department);
+  addRecord(record) {
+    cy.get("#addNewRecordButton").should("be.visible").click();
+
+    cy.get(".modal-content").should("be.visible");
+
+    cy.get("#firstName").type(record.firstName);
+    cy.get("#lastName").type(record.lastName);
+    cy.get("#userEmail").type(record.email);
+    cy.get("#age").type(String(record.age));
+    cy.get("#salary").type(String(record.salary));
+    cy.get("#department").type(record.department);
+
+    cy.get("#submit").should("be.enabled").click();
+
+    cy.get(".modal-content").should("not.exist");
+
+    this.getRowByEmail(record.email)
+      .should("be.visible")
+      .and("contain.text", record.department);
   }
 
   editDepartment(email, department) {
-    cy.contains('.rt-tr-group', email).within(() => {
-      cy.get('[title="Edit"]').click();
-    });
+    cy.removeDemoQaAds();
 
-    cy.get('#department').should('be.visible').clear().type(department);
-    cy.get('#submit').click();
+    this.getRowByEmail(email)
+      .scrollIntoView()
+      .within(() => {
+        cy.get('[title="Edit"]').should("exist").click({ force: true });
+      });
 
-    cy.contains('.rt-tr-group', email).should('contain.text', department);
+    cy.get(".modal-content").should("be.visible");
+
+    cy.get("#department").clear().type(department);
+
+    cy.get("#submit").should("be.enabled").click();
+
+    cy.get(".modal-content").should("not.exist");
+
+    this.getRowByEmail(email)
+      .should("be.visible")
+      .and("contain.text", department);
   }
 
   deleteRecord(email) {
-    cy.contains('.rt-tr-group', email).within(() => {
-      cy.get('[title="Delete"]').click();
-    });
+    cy.removeDemoQaAds();
 
-    cy.contains('.rt-tr-group', email).should('not.exist');
+    this.getRowByEmail(email)
+      .scrollIntoView()
+      .within(() => {
+        cy.get('[title="Delete"]').should("exist").click({ force: true });
+      });
+
+    cy.contains("table tbody tr", email).should("not.exist");
   }
 }
 
